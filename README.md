@@ -1,2 +1,2 @@
 # practicing_implementing_protocols
-repo dedicated to pracitcing implementing protocol from basic to advanced protocols
+This repo is dedicated to practicing implementing protocol from basic to advanced protocols
