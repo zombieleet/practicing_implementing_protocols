@@ -24,27 +24,19 @@ func (u *UserCmd) Validate(_ context.Context, e *ExecuteOptions) error {
 		return commandErrors.ErrUserDoesNotExists
 	}
 
-	e.Storage.RecordActiveUserConn(e.Client, user)
-
 	return nil
 }
 
 // Execute validates and execute operation under USER cmd
-func (u *UserCmd) Execute(c context.Context, e *ExecuteOptions) (<-chan reply.ReplyResponse, error) {
+func (u *UserCmd) Execute(c context.Context, e *ExecuteOptions) (*reply.ReplyResponse, error) {
 	if err := u.Validate(c, e); err != nil {
 		return nil, err
 	}
 
-	ch := make(chan reply.ReplyResponse)
-
-	go func() {
-		ch <- reply.ReplyResponse{
-			Code:    reply.CodeReadyForNewUser,
-			Message: "USER ok. Enter PASSWORD",
-		}
-	}()
-
-	return ch, nil
+	return &reply.ReplyResponse{
+		Code:    reply.CodeUserNameOkay,
+		Message: "USER ok. Enter PASSWORD",
+	}, nil
 }
 
 // Name returns the name of USER command

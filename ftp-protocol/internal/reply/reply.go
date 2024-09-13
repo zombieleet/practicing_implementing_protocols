@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	commandErrors "github.com/zombieleet/ftp-protocol/internal/commands/errors"
+	storageErrors "github.com/zombieleet/ftp-protocol/internal/storage/errors"
 )
 
 type Reply struct {
@@ -44,7 +45,7 @@ var (
 	CodeConnectionClosed           = 426
 	CodeTransferAborted            = 426
 	CodePassiveMode                = 227
-	CodeUserLoggedIn               = 230
+	CodeLoggedInOk                 = 230
 	CodeNotLoggedIn                = 530
 	CodeUserNameOkay               = 331
 	CodeNeedAccountForLogin        = 332
@@ -101,6 +102,22 @@ func (r *Reply) ToFTPResponseCode(err error) int {
 
 	if errors.Is(err, commandErrors.ErrBadCommand) {
 		return CodeUnrecognizedCommand
+	}
+
+	if errors.Is(err, storageErrors.ErrUserDoesNotExists) {
+		return CodeNotLoggedIn
+	}
+
+	if errors.Is(err, storageErrors.ErrBadUserNameAndPassword) {
+		return CodeNotLoggedIn
+	}
+
+	if errors.Is(err, storageErrors.ErrActiveConnUserNotFound) {
+		return CodeBadSequenceOfCommands
+	}
+
+	if errors.Is(err, commandErrors.ErrUnAuthorized) {
+		return CodeNotLoggedIn
 	}
 
 	return 0

@@ -2,19 +2,18 @@ package default_storage
 
 import (
 	"github.com/zombieleet/ftp-protocol/internal/storage"
+	storageErrors "github.com/zombieleet/ftp-protocol/internal/storage/errors"
 )
 
 type DefaultStorage struct {
-	store      map[string]string
-	activeConn map[string]string
+	store map[string]string
 }
 
 func New() storage.Storage {
 	store := make(map[string]string)
 	store["victory"] = "password"
 	return &DefaultStorage{
-		store:      store,
-		activeConn: make(map[string]string),
+		store: store,
 	}
 }
 
@@ -25,6 +24,16 @@ func (d *DefaultStorage) UserExists(user string) bool {
 	return true
 }
 
-func (d *DefaultStorage) RecordActiveUserConn(remoteClientAddr string, user string) {
-	d.activeConn[remoteClientAddr] = user
+func (d *DefaultStorage) Login(user string, password string) error {
+	dbPassword, ok := d.store[user]
+
+	if !ok {
+		return storageErrors.ErrUserDoesNotExists
+	}
+
+	if dbPassword != password {
+		return storageErrors.ErrBadUserNameAndPassword
+	}
+
+	return nil
 }

@@ -1,7 +1,9 @@
 package storage
 
+// Storage to be implemented by storage mechanisms
 type Storage interface {
+	// UserExists checks if a user exists
 	UserExists(string) bool
-	// RecordActiveUserConn records connection that has executed the USER command, first param is the remote address of the client connection, second param is the username preceeding the USER command
-	RecordActiveUserConn(string, string)
+	// Login the user giving username and password
+	Login(string, string) error
 }
