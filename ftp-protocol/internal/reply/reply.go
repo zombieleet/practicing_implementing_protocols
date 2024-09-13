@@ -64,7 +64,7 @@ var (
 	CodeBadFileName                = 553
 )
 
-func (r *Reply) SendResponse(code int, msg string) {
+func (r *Reply) SendResponse(code int, msg string) error {
 	msg = fmt.Sprintf("%d %s", code, msg)
 	responseLogger := r.Logger.With(slog.String("response_message", msg))
 
@@ -79,7 +79,7 @@ func (r *Reply) SendResponse(code int, msg string) {
 	if err != nil {
 		responseLogger.Error(err.Error())
 		responseLogger.Error("Unable to send response")
-		return
+		return err
 	}
 
 	_, err = r.Conn.Write(byteMessage)
@@ -87,10 +87,11 @@ func (r *Reply) SendResponse(code int, msg string) {
 	if err != nil {
 		responseLogger.Error(err.Error())
 		responseLogger.Error("Unable to send response")
-		return
+		return err
 	}
 
 	responseLogger.Info("Sent Succesfully to client")
+	return nil
 }
 
 // ToFTPResponseCode returns an ftp reply code based on an error message

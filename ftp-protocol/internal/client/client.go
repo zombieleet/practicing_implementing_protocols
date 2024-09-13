@@ -95,7 +95,9 @@ func (ftpClient *FTPClient) Handle() {
 			continue
 		}
 
-		r.SendResponse(replyResponse.Code, replyResponse.Message)
+		if err = r.SendResponse(replyResponse.Code, replyResponse.Message); err != nil {
+			continue
+		}
 
 		switch cmd.Name() {
 		case "PASS":
