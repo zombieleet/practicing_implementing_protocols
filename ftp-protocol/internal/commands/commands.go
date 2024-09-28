@@ -40,6 +40,10 @@ func GetCommand(command string, params []string) (CMD, error) {
 		}
 	case "PWD":
 		cmd = &PwdCmd{}
+	case "SYST":
+		cmd = &SystCmd{}
+	case "PASV":
+		cmd = &PasvCmd{}
 	default:
 		return nil, commandErrors.ErrBadCommand
 	}
