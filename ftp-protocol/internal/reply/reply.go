@@ -32,11 +32,12 @@ var (
 	CodeSystemStatus                      = 211
 	CodeSystemHelp                        = 211
 	CodeDirStatus                         = 212
-	CodeFileStatus                        = 213
+	CodeFileStatInfo                      = 213
 	// On how to use the server or the meaning of a particular
 	// non-standard command.  This reply is useful only to the human user.
 	CodeHelpMessage                = 214
 	CodeClosingConnection          = 221
+	CodeClosingDataConnection      = 226
 	CodeReadyForNewUser            = 220
 	CodeServiceUnavailable         = 421
 	CodeDataConnAlreadyOpen        = 125
@@ -45,6 +46,8 @@ var (
 	CodeConnectionClosed           = 426
 	CodeTransferAborted            = 426
 	CodePassiveMode                = 227
+	CodeLongPassiveMode            = 228
+	CodeExtendedPassiveMode        = 229
 	CodeLoggedInOk                 = 230
 	CodeNotLoggedIn                = 530
 	CodeUserNameOkay               = 331

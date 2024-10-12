@@ -2,18 +2,6 @@
 
 ### Commands
 
-When ftp command crosses the wire, the default port it uses is port 21. FTP also makes use of port 20 for the FTP Data channel by default.
-
-Most ftp data sessions don't use port 20 for data transfer. Invidual control and data channels are used separat3eely from large file transfers.
-
-The PORT command can be use to specify what port the server should sent data to.
-
-When client is on active mode FTP, this does not work well if the client is behind a firewall or NAT is used ont he clients network. Passive mode ftp solves this problem, by letting the client send a `PASV` command to the server. The server returns a high port normal (normally greater than 1024) that the client used use for data connection
-
-In summary, the PORT command is used in FTP to communicate the TCP port number to use for the data transfer channel. In active mode FTP, the client uses the PORT command to tell the server which high-numbered port the client will use for the data channel, and the server opens a connection to that port. In passive mode, the PASV command is sent by the client, and the server responds with the high-numbered port on which it will accept the data connection
-
-
-If passive mode is turned on (default), ftp will send a PASV command for all data connections instead of a PORT command. The PASV command requests that the remote server open a port for the data connection and return the address of that port. The remote server listens on that port and the client connects to it. When using the more traditional PORT command, the client listens on a port and sends that address to the remote server, who connects back to it. Passive mode is useful when using ftp through a gateway router or host that controls the directionality of traffic. (Note that though FTP servers are required to support the PASV command by RFC 1123, some do not.)
 
 1. USER
    This command helps to identify if a user should have accees to file information. After this command it is common to have a `PASS` command for authenticating a user
@@ -55,9 +43,31 @@ REPLY_CODE <SP> TEXT\r\n
 The `\r\n` represents the telnet EOL code that needs to be used to signal the end of a response/request text
 
 
+### EPSV, LSPV and PASV
 
+When ftp command crosses the wire, the default port it uses is port 21. FTP also makes use of port 20 for the FTP Data channel by default.
+Most ftp data sessions don't use port 20 for data transfer. Invidual control and data channels are used separat3eely from large file transfers.
+
+The PORT command can be use to specify what port the server should sent data to.
+
+When client is on active mode FTP, this does not work well if the client is behind a firewall or NAT is used ont he clients network. Passive mode ftp solves this problem, by letting the client send a `PASV` command to the server. The server returns a high port normal (normally greater than 1024) that the client used use for data connection
+
+In summary, the PORT command is used in FTP to communicate the TCP port number to use for the data transfer channel. In active mode FTP, the client uses the PORT command to tell the server which high-numbered port the client will use for the data channel, and the server opens a connection to that port. In passive mode, the PASV command is sent by the client, and the server responds with the high-numbered port on which it will accept the data connection
+
+
+If passive mode is turned on (default), ftp will send a PASV command for all data connections instead of a PORT command. The PASV command requests that the remote server open a port for the data connection and return the address of that port. The remote server listens on that port and the client connects to it. When using the more traditional PORT command, the client listens on a port and sends that address to the remote server, who connects back to it. Passive mode is useful when using ftp through a gateway router or host that controls the directionality of traffic. (Note that though FTP servers are required to support the PASV command by RFC 1123, some do not.)
+
+EPSV (extended passive mode)  ftp command, the PASV command is only designed for IPV4, ESPV SUPPORTS BOTH ipv4 and ipv6, some ftp client
+would rather send ESPV command to allow the server use whatever it supports.
+
+
+1. The major difference between ESPV and PASV is that ESPV supprots both ipv4 and ipv6 while, PASV supports only ipv4
+2. Another difference is that the ESPV command response, only supports passing a port as the response, rather than including the ip address. For LSPV command, we have the opportunity to specifiy ipv6 ip address including the port number as well.
+
+LSPV should only be used for exremly complex networks
 ### References
 
 https://userpages.umbc.edu/~dgorin1/451/OSI7/dcomm/ftp.htm#:~:text=The%20control%20connection%20is%20used,to%20actually%20send%20a%20file.
-
+https://datatracker.ietf.org/doc/html/rfc2428
+https://datatracker.ietf.org/doc/html/rfc1639
 telnet (mainly for control connections process-process communication): https://datatracker.ietf.org/doc/html/rfc854

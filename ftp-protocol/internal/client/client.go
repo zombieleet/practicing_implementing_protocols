@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	command "github.com/zombieleet/ftp-protocol/internal/commands"
+	"github.com/zombieleet/ftp-protocol/internal/dtp"
 	"github.com/zombieleet/ftp-protocol/internal/reply"
 	"github.com/zombieleet/ftp-protocol/internal/storage"
 	commandParser "github.com/zombieleet/ftp-protocol/pkg/command_parser"
@@ -28,9 +29,14 @@ type FTPClient struct {
 }
 
 func (ftpClient *FTPClient) Handle() {
+
+	// this is use to reset the log instance to prevent nested log from different
+	// cmd context
+	resetLogger := slog.New(ftpClient.Logger.Handler())
+
 	r := reply.Reply{
 		Conn:   ftpClient.Conn,
-		Logger: ftpClient.Logger,
+		Logger: resetLogger,
 	}
 
 	ftpClient.Logger.Info("🤝Accpeted Connection")
@@ -44,7 +50,12 @@ func (ftpClient *FTPClient) Handle() {
 
 	ftpClient.currentDir = homedir
 
+	dtpChannel := make(chan dtp.DTPChannel)
+
 	for {
+
+		ftpClient.Logger = resetLogger
+		r.Logger = resetLogger
 
 		rawClientRequestData, err := reader.ReadString('\n')
 
@@ -79,7 +90,7 @@ func (ftpClient *FTPClient) Handle() {
 
 		r.Logger = ftpClient.Logger
 
-		replyResponse, err := cmd.Execute(ctx, &command.ExecuteOptions{
+		cmdExecOptions := &command.ExecuteOptions{
 			LoggedIn:   ftpClient.loggedIn,
 			Username:   ftpClient.username,
 			CurrentDir: ftpClient.currentDir,
@@ -87,7 +98,10 @@ func (ftpClient *FTPClient) Handle() {
 			Logger:     ftpClient.Logger,
 			Client:     ftpClient.Conn.RemoteAddr().String(),
 			RootDir:    homedir,
-		})
+			DTPChannel: dtpChannel,
+		}
+
+		replyResponse, err := cmd.Execute(ctx, cmdExecOptions)
 
 		if err != nil {
 			ftpClient.Logger.Error("Error executing command", "cmd", cmd.Name())
@@ -109,6 +123,17 @@ func (ftpClient *FTPClient) Handle() {
 				continue
 			}
 			ftpClient.username = params[0]
+
+		case "PASV", "EPSV", "LPSV":
+			// we only set this up when have already receive a PASV command
+			// because that is when the control response channel is created
+			// TODO: implement a done channel to close cmdExecOptions.DTPControlResponseChannel
+			go func() {
+				select {
+				case response := <-cmdExecOptions.DTPControlResponseChannel:
+					r.SendResponse(response.Code, response.Message)
+				}
+			}()
 		}
 	}
 

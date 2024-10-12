@@ -5,18 +5,21 @@ import (
 	"log/slog"
 
 	commandErrors "github.com/zombieleet/ftp-protocol/internal/commands/errors"
+	"github.com/zombieleet/ftp-protocol/internal/dtp"
 	"github.com/zombieleet/ftp-protocol/internal/reply"
 	"github.com/zombieleet/ftp-protocol/internal/storage"
 )
 
 type ExecuteOptions struct {
-	Storage    storage.Storage
-	Logger     *slog.Logger
-	Client     string
-	Username   string
-	RootDir    string
-	CurrentDir string
-	LoggedIn   bool
+	Storage                   storage.Storage
+	Logger                    *slog.Logger
+	Client                    string
+	Username                  string
+	RootDir                   string
+	CurrentDir                string
+	LoggedIn                  bool
+	DTPChannel                chan dtp.DTPChannel
+	DTPControlResponseChannel <-chan *reply.ReplyResponse
 }
 
 type CMD interface {
@@ -42,8 +45,18 @@ func GetCommand(command string, params []string) (CMD, error) {
 		cmd = &PwdCmd{}
 	case "SYST":
 		cmd = &SystCmd{}
-	case "PASV":
-		cmd = &PasvCmd{}
+	case "PASV", "EPSV", "LPSV":
+		cmd = &PasvCmd{
+			command: command,
+		}
+	case "SIZE":
+		cmd = &SizeCmd{
+			Params: params,
+		}
+	case "RETR":
+		cmd = &RetrCmd{
+			Params: params,
+		}
 	default:
 		return nil, commandErrors.ErrBadCommand
 	}
